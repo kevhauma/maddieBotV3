@@ -1,0 +1,33 @@
+{
+  "name": "maddiebot",
+  "version": "1.0.0",
+  "description": "maddiebto",
+  "main": "changeallnicknames.js",
+  "dependencies": {
+    "JSONStream": "^1.3.1",
+    "axios": "^0.17.1",
+    "cleverbot-node": "^0.3.11",
+    "discord.js": "^11.1.0",
+    "he": "^1.1.1",
+    "mongodb": "^3.1.10",
+    "request": "^2.85.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "kevhauma",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevhauma/maddiebotV2.git"
+  },
+  "keywords": [
+    "discord",
+    "bot"
+  ],
+  "bugs": {
+    "url": "https://github.com/kevhauma/maddiebotV2/issues"
+  },
+  "homepage": "https://github.com/kevhauma/maddiebotV2#readme"
+}
