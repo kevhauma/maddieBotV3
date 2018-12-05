@@ -1,183 +1,85 @@
 let database = require("../database/database")
 let logger = require("../logger/logger")
-let db
+let Member = require("../classes/member")
+module.exports.members = {}
+module.exports.settings = {}
 
-tryConnect()
-modules.exports.members.add = (member) => {
-    return new Promise((res, rej) => {
-        if (!db) {
-            rej("db not connected")
-            return
-        }
-        const collection = db.collection('members')
-        collection.insertOne(member, (err, result) => {
-            if (err) {
-                rej(err)
-            }
-            logger.log("INFO", "member added: " + member.name)
-            res(result)
-        })
-    })
-}
-
-modules.exports.members.update = (obj) => {
-    return new Promise((res, rej) => {
-        if (!db) {
-            rej("db not connected")
-            return
-        }
-
-        const collection = db.collection('members');
-        collection.updateOne({
-            id: member.id
-        }, {
-            $set: {obj}
-        }, (err, result) => {
-            if (err) {
-                rej(err)
-                return
-            }
-            logger.log("INFO", "member update: " + member.name)
-            res(result);
-        })
-    })
-}
-
-modules.exports.members.findbyID = (id) => {
-    return new Promise((res, rej) => {
-        if (!db) {
-            rej("db not connected")
-            return
-        }
-
-        const collection = db.collection('members');
-        let found = collection.findOne({
-            "id": id
-        })
-        if (!found) {
-            rej("no member found with ID: " + id)
-            return
-        } else
-            res(found)
-    })
+module.exports.members.add = async function (guild, member) {
+    let res = await maptoDB(guild, "insertOne", member)
+    return res
 }
 
 
-modules.exports.members.findMany = (obj) => {
-    return new Promise((res, rej) => {
-        if (!db) {
-            rej("db not connected")
-            return
-        }
-        const collection = db.collection('members');
-        collection.find(obj).toArray((err, found) => {
-            if (err) {
-                rej(err)
-                return
-            }
-            res(found)
-        })
-    })
-}
-modules.exports.members.find = (obj) => {
-    return new Promise((res, rej) => {
-        if (!db) {
-            rej("db not connected")
-            return
-        }
-
-        const collection = db.collection('members');
-        let found = collection.findOne(obj)
-        if (!found) {
-            rej("no member found with :" + obj)
-            return
-        } else
-            res(found)
-    })
-}
-modules.exports.members.remove = (obj) => {
-    return new Promise((res, rej) => {
-        if (!db) {
-            rej("db not connected")
-            return
-        }
-        const collection = db.collection('members');
-        collection.deleteOne({
-            id: obj.id
-        }, (err, result) => {
-            if (err)
-                rej(err)
-            else {
-                logger.log("INFO", "member deleted: " + obj.name)
-                res(result)
-            }
-        });
-
-    })
-
+module.exports.members.update = async function (guild, obj) {
+    let res = await maptoDB(guild, "updateOne", {id:obj.id},{$set:{obj}})
+    return res
 }
 
 
-modules.export.settings.get = () {
-    return new Promise((res, rej) => {
-        if (!db) {
-            rej("db not connected")
-            return
-        }
-        const collection = db.collection('settings');
-        let found = collection.findOne({
-            id: 1
-        })
-        if (!found) {
-            rej("no settings found")
-            return
-        } else
-            res(found)
+module.exports.members.findbyID = async function (guild, id) {
+    let res = await maptoDB(guild, "findOne", {
+        "id": id
     })
-}
-
-modules.export.settings.update = (obj) {
-    return new Promise((res, rej) => {
-        if (!db) {
-            rej("db not connected")
-            return
-        }
-        const collection = db.collection('settings');
-        collection.updateOne({id: 1}, {
-            $set: {
-                obj
-            }
-        }, (err, result) => {
-            if (err) {
-                rej(err)
-                return
-            } else {
-                logger.log("INFO", "settings updated")
-                res(result)
-            }
-        })
-    })
+    return res
 }
 
 
-function tryConnect() {
+module.exports.members.findMany = async function (guild, obj) {
+    let res = await maptoDB(guild, "find", obj)
+    return await res.toArray()
+}
+module.exports.members.find = async function (guild, obj) {
+    let res = await maptoDB(guild, "findOne", obj)
+    return res
+}
+module.exports.members.remove = async function (guild, obj) {
+    let res = await maptoDB(guild, "deleteOne", obj)
+    return res
+}
+
+module.exports.settings.set = async function (obj) {
+    return await maptoDB(obj.guild, "insertOne", obj, null,true)
+
+}
+module.exports.settings.get = async function (guild) {
+    return await maptoDB(guild, "findOne", {
+        guild: guild
+    }, null,true)
+}
+
+module.exports.settings.update = async function (guild, obj) {
+    return await maptoDB(guild, "updateOne", {
+        guild: guild
+    }, {
+        $set: {
+            obj
+        }
+    }, true)
+
+}
+
+async function maptoDB(guild, func, obj, set, settings) {
     try {
-        db = database.get()
-    } catch (err) {
-        setTimeout(tryConnect, 5000)
-    }
-}
+        let db
+        let collection
+        if (settings) {
+            db = await database.get("settings")
+            collection = db.collection('settings')
+        } else {
+            db = await database.get(guild)
+            collection = db.collection('members')
+        }
 
-module.exports = {
-    "members": {
-        findbyID,
-        findMany,
-        find,
-        update,
-        add,
-        remove
-    },
-    "settings": {
-        update
+
+        if (set) {
+            return await collection[func](obj, set)
+        } else {
+            return await collection[func](obj)
+
+        }
+    } catch (e) {
+        setTimeout(() => {
+            throw "DBH - " + func + ": " + e
+        })
     }
 }

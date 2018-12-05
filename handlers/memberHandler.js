@@ -1,13 +1,12 @@
 let Member = require("../classes/member")
-let db = require("../handlers/databaseHandler")
+let db = require("../handlers/databaseHandler").members
 
-function createMember(gm, cb) {
+async function createMember(gm) {
     let member = {
         name: gm.displayName,
         id: gm.id,
-        joinedOn: gm.joinedAt,
-        color: gm.displayColor,
-        isMod: false,
+        guild: gm.guild.id,
+        mod: false,
         currency: {
             points: 100,
             maxpoints: 100
@@ -38,57 +37,64 @@ function createMember(gm, cb) {
             seasonal: []
         }
     }
-    db.addMember(new Member(member))
-        .then(m => {
-            if (cb)
-                cb(m)
+
+    try {
+        return await dbQuery(db.add, new Member(member), member.guild)
+    } catch (e) {
+        setTimeout(() => {
+            throw "memberHandler - : " + e
         })
-        .catch(err => setTimeout(() => {
-            throw err
-        }))
+    }
+}
+
+
+async function getMemberByID(id, guild,gm) {
+    let res = await dbQuery(db.findbyID, id, guild)
+    if(!res && gm){
+        return await createMember(gm)
+    }
+    return new Member(res)
+}
+
+async function getMember(guild, obj) {
+    let res = await dbQuery(db.find, obj, guild)
+    return new Member(res)
+
+}
+
+async function getMembers(obj, guild) {
+    if (!guild) {
+        guild = obj
+        obj = null
+    }
+    return await dbQuery(db.findMany, obj, guild)
+}
+
+async function deleteMember(obj, guild) {
+    return await dbQuery(db.remove, {
+        "id": obj.id
+    }, guild)
+}
+
+async function updateMember(member) {
+    return await dbQuery(db.update, member, member.guild)
 
 }
 
 
-function getMemberByID(gm, cb) {
-    db.findMemberbyID(gm.id).then(m => {
-        if (cb)
-            cb(m)
-    }).catch(err => setTimeout(() => {
-        throw err
-    }))
+async function dbQuery(func, obj, guild) {
+    try {
+        let m = await func(guild, obj)
+        return m
+    } catch (e) {
+        setTimeout(() => {
+            throw "memberHandler - : " + e
+        })
+    }
 }
 
-function getMember(obj, cb) {
-    db.findMember(obj).then(m => {
-        if (cb)
-            cb(m)
-    }).catch(err => setTimeout(() => {
-        throw err
-    }))
-}
 
-function getMembers(obj, cb) {
-    db.findMembers(obj).then(m => {
-        if (cb)
-            cb(m)
-    }).catch(err => setTimeout(() => {
-        throw err
-    }))
-}
 
-function deleteMember(obj, cb) {
-    db.removeMember(obj).then(m => {
-        if (cb)
-            cb(m)
-    }).catch(err => setTimeout(() => {
-        throw err
-    }))
-}
-
-function updateMember() {
-
-}
 
 
 module.exports = {
@@ -96,5 +102,6 @@ module.exports = {
     getMemberByID,
     getMember,
     getMembers,
-    deleteMember
+    deleteMember,
+    updateMember
 }

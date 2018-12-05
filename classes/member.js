@@ -1,15 +1,15 @@
-let database = require("../database/database")
+let mh = require("../handlers/memberhandler")
 class Member {
     constructor(m) {
         this.name = m.name
         this.id = m.id
-        this.color = m.color
-        this.joinedOn = m.joinedOn
+        this.guild = m.guild
+        this.mod = m.mod
         this.stats = m.stats
         this.currency = m.currency
     }
-    addCurrency(amount, cb) {
-        let amount = this.isValidAmount(amount)
+    addCurrency(amount) {
+        amount = this.isValidAmount(amount)
         if (!amount) {
             throw "isNaN"
             return
@@ -19,10 +19,9 @@ class Member {
         if (this.currency.points > this.currency.maxpoints)
             this.currency.maxpoints = this.currency.points
 
-        cb(this)
     }
-    subtractCurrency(amount, cb) {
-        let amount = this.isValidAmount(amount)
+    subtractCurrency(amount) {
+        amount = this.isValidAmount(amount)
         if (!amount) {
             throw "isNaN"
             return
@@ -32,7 +31,6 @@ class Member {
             return
         }
         this.currency.points -= amount
-        cb(this)
 
     }
     isValidAmount(amount) {
@@ -41,55 +39,44 @@ class Member {
 
         return parseInt(amount)
     }
-    addGamble(result, cb) {
+    addGamble(result) {
         if (result === "won") {
             this.stats.gamble.wins += 1
-        } else this.stats.gamble.losses += 1
-        cb(this)
+            this.stats.gamble.chance = 70
+        } else {
+            this.stats.gamble.losses += 1
+            this.stats.gamble.chance -= 5
+        }
     }
-    addJackpot(jackpot, cb) {
+    addJackpot(jackpot) {
         if (jackpot)
             this.stats.jackpot.jackpot += 1
         this.stats.jackpot.gamesPlayed += 1
-        cb(this)
     }
-    addHighLow(maxMul, cb) {
+    addHighLow(maxMul) {
         this.stats.highlow.gamesPlayed += 1
         if (maxMul > this.stats.higlow.maxMul)
             this.stats.higlow.maxMul = maxMul
-        cb(this)
     }
-    addHangman(result, cb) {
+    addHangman(result) {
         if (result === "won")
             this.stats.hangman.wins += 1
         else
             this.stats.hangman.losses += 1
-        cb(this)
     }
-    changeName(newname, cb) {
+    changeName(newname) {
         if (newname)
             this.name = newname
         else throw "newname from " + this.name + " is empty"
 
-        cb(this)
     }
-    changeColor(newcolor, cb) {
-        if (newcolor)
-            this.color = newcolor
-        else throw "newcolor from " + this.name + " is empty"
-        cb(this)
+    update() {
+        mh.updateMember(this)
     }
-    update(cb) {
-        database.updateMember(this)
-        .then(m=>{            
-            cb(m)
-        })
-        .catch(err=> setTimeout(()=>{throw err}))
-    }
-    addMessage(message,cb){
+    addMessage(message) {
         this.stats.message.latest = message.createAt
         this.stats.message.count += 1
-        if(!this.stats.message.first){
+        if (!this.stats.message.first) {
             this.stats.message.first = message.createAt
         }
     }
@@ -98,8 +85,8 @@ module.exports = Member
 let memberKSDKFSKDFJ = {
     name: "naam",
     id: "id",
-    joinedOn: "date",
-    color: "#F0F",
+    mod: true,
+    guild: "566746516865684",
     currency: {
         points: 5000,
         maxpoints: 15000

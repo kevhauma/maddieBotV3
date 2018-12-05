@@ -1,12 +1,16 @@
 let fs = require('fs')
 let logFile
 let mod_logs
-let ignoredLevels = ["DEBUG","TRACE"]
+let ignoredLevels = ["DEBUG","TRACE","INFO","MESSAGE"]
 
 function log(level, st) {
     level = level.toUpperCase()
+    let file = "MESSAGE"
+    if(level !== "MESSAGE"){
+        file = "LOG"
+    }
     console.log(level + " | " + st)
-    logfile = fs.createWriteStream("./logger/logs/" + level + ".log", {
+    logfile = fs.createWriteStream("./logger/logs/" + file + ".log", {
         flags: 'a'
     })
     logfile.write("[" + new Date().toLocaleTimeString() + "] " + st + "\r\n");

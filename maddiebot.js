@@ -1,17 +1,24 @@
 ////packages
-//const Discord = require('discord.js')
+const Discord = require('discord.js')
+const mh = require("./handlers/memberHandler")
+const settingHandler = require("./handlers/databaseHandler").settings
+const gamble = require("./commands/gamble")
+const config = require("./data/config.json")
 //const axios = require('axios')
 //let fs = require("fs")
 //let JSONStream = require("JSONStream")
 //let he = require('he');
 //let Cleverbot = require('cleverbot-node');
 //
+mh.getMember("316521652034863104",{name:"MrJunior717"}).then((m) => {
+    console.log(m)
+})
+
+const client = new Discord.Client()
 //
-//const config = require("./data/config.json")
 //let currencyMembers = require("./data/members.json")
 //let membersFile = "/data/members.json"
 //let owner = config.ownerID
-//const client = new Discord.Client()
 //let cleverbot = new Cleverbot;
 //cleverbot.configure({
 //    botapi: config.clevertoken
@@ -49,22 +56,22 @@
 //
 //
 //
-//client.on('ready', () => {
-//    console.log('I am ready!')
-//    //countDown(client)
-//    owner = client.guilds.first().members.get(owner).user
-//    client.user.setPresence({
-//            'status': 'online',
-//            'game': {
-//                'name': 'back in a few weeks',
-//                'type': 1,
-//                'url': 'https://www.twitch.tv/madeleineink'
-//            }
-//        })
-//        .catch(error => {
-//            console.log(error)
-//        })
-//})
+client.on('ready', () => {
+    console.log('I am ready!')
+    //    //countDown(client)
+    //    owner = client.guilds.first().members.get(owner).user
+    //    client.user.setPresence({
+    //            'status': 'online',
+    //            'game': {
+    //                'name': 'back in a few weeks',
+    //                'type': 1,
+    //                'url': 'https://www.twitch.tv/madeleineink'
+    //            }
+    //        })
+    //        .catch(error => {
+    //            console.log(error)
+    //        })
+})
 //client.on('message', function (message) {
 //    if (message.channel.type == 'dm') {
 //        if (message.channel.recipient.id !== owner.id)
@@ -142,6 +149,6 @@
 //client.on('resume', (replayed) => {
 //    console.log("resume", replayed)
 //})
-//client.login(config.token).catch((err) => {
-//    console.log(err)
-//})
+client.login(config.token).catch((err) => {
+    console.log(err)
+})

@@ -1,20 +1,30 @@
 const MongoClient = require('mongodb').MongoClient;
 
+const serverList = require("../data/config").servers
+
 const url = 'mongodb://localhost:27017';
 
-const dbName = 'maddieBot';
 
 // Create a new MongoClient
 const client = new MongoClient(url);
 
-let db
+let db = {}
 
+    
 client.connect(err => {
-    console.log("Database is ready");
-    db = client.db(dbName);
+    if (err) throw "databse is rip: " + err
+    serverList.forEach(s=>{
+        db[s.guild] = client.db(s.guild)
+    })
 })
 
-module.exports.get = ()=>{
-    if (db) return db
-    else throw "db not connected"
+module.exports.get = function (s) {
+    return new Promise((res, rej) => {
+        if (!db[s])
+            setTimeout(() => {
+                res(db[s])
+            }, 5000)
+        else res(db[s])
+    })
+
 }

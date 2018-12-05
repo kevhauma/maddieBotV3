@@ -1,31 +1,53 @@
-let settings = require("../handlers/databaseHandler").settings.get()
-
+let logger = require("../logger/logger")
+let fs = require("fs")
 let commands = []
 
+let dbHandler = require("../handlers/databaseHandler")
+let setting
 
-function messageHandle(message) {
-    if (!message.content.startsWith(setting.prefix)) return
-    
-    let commandCall = message.content.split(" ")[0].replace("!", "")
-    let command = commands.find(c=> c.name === commandCall)
-    if(!command) return
-    
-    command.run(message)
+try {
+    loadFiles()
+} catch (e) {
+    logger.log("error", "commandHandler - loadfiles: " + e)
 }
 
-function reactionHandle(reaction){
-    commands.forEach(c=>{
-        if (c.check) c.check()
-    })
+
+
+async function messageHandle(message) {
+    try {
+        setting = await dbHandler.settings.get()
+
+        if (!message.content.startsWith(setting.prefix)) return
+
+        let commandCall = message.content.split(" ")[0].replace("!", "")
+        let command = commands.find(c => c.name === commandCall)
+        if (!command) return
+
+        command.run(message)
+    } catch (e) {
+        logger.log("error", "commandHandler - handleMessage: " + e)
+    }
+}
+
+function reactionHandle(reaction) {
+    try {
+        commands.forEach(c => {
+            if (c.check) c.check()
+        })
+    } catch (e) {
+        logger.log("error", "commandHandler - handleMessage: " + e)
+
+    }
 }
 
 
 function loadFiles() {
     commands = []
-    fs.readdir("../commands/", (err, files) => {
+    fs.readdir("./commands/", (err, files) => {
+        if (err) throw err
         files.forEach(file => {
             if (file.endsWith('.js')) {
-                let command = require("./commands/" + files[t])
+                let command = require("../commands/" + file)
                 commands.push(command)
             }
         })

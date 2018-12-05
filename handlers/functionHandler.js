@@ -32,14 +32,14 @@ module.exports = {
 
 
 
-function loadFunctions {
-    artclub = require("../functions/artclub")
-    countdown = require("../functions/countdown")
-    giveOnMessage = require("../functions/giveOnMessage")
-    isLive = require("../functions/isLive")
-    onJoin = require("../functions/onJoin")
-    onLeave = require("../functions/onLeave")
-    pictureReact = require("../functions/pictureReact")
-    promotion = require("../functions/promotion")
-    messageReact = require("../functions/messageReact")
+function loadFunctions() {
+//    artclub = require("../functions/artclub")
+//    countdown = require("../functions/countdown")
+//    giveOnMessage = require("../functions/giveOnMessage")
+//    isLive = require("../functions/isLive")
+//    onJoin = require("../functions/onJoin")
+//    onLeave = require("../functions/onLeave")
+//    pictureReact = require("../functions/pictureReact")
+//    promotion = require("../functions/promotion")
+//    messageReact = require("../functions/messageReact")
 }
