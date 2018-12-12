@@ -12,52 +12,58 @@ let cardLinks = [
     ]
 
 let run = async function (message) {
-    let isAllowed = false
-    let player = await mH.getMemberByID(message.member.id)
+    try {
+        let isAllowed = false
+        let player = await mH.getMemberByID(message.member.id)
 
-    let amountReg = message.content.match(/ [0-9]+| all/i)
-    let amount
-    if (amountReg)
-        amount = amountReg[0].trim()
+        let amountReg = message.content.match(/ [0-9]+| all/i)
+        let amount
+        if (amountReg)
+            amount = amountReg[0].trim()
 
-    if (!amount) {
-        amount = 0
-    }
-    if (amount == "all") {
-        amount = member.currency.points
-
-    }
-    if (amount)
-        player.subtractCurrency(amount)
-
-    let game = findHLgame(message.member.displayName)
-
-    if (game) {
-        game.stop()
-    }
-
-    game = new HighLow(player, amount)
-    activeHLGames.push(game)
-
-    let card = game.getCard()
-    let embed = game.getEmbed(card)
-
-    let m = await message.channel.send({
-        embed
-    })
-
-    await m.react("🔺")
-    setTimeout(() => {
-        Rmessage.react("🔻")
-    }, 250)
-
-    function findHLgame(name) {
-        for (let i = 0; i < activeHLGames.length; i++) {
-            if (activeHLGames[i].getname() === name) {
-                return activeHLGames[i]
-            }
+        if (!amount) {
+            amount = 0
         }
-        return null
+        if (amount == "all") {
+            amount = member.currency.points
+
+        }
+        if (amount)
+            player.subtractCurrency(amount)
+
+        let game = findHLgame(message.member.displayName)
+
+        if (game) {
+            game.stop()
+        }
+
+        game = new HighLow(player, amount)
+        activeHLGames.push(game)
+
+        let card = game.getCard()
+        let embed = game.getEmbed(card)
+
+        let m = await message.channel.send({
+            embed
+        })
+
+        await m.react("🔺")
+        setTimeout(() => {
+            Rmessage.react("🔻")
+        }, 250)
+
+        function findHLgame(name) {
+            for (let i = 0; i < activeHLGames.length; i++) {
+                if (activeHLGames[i].getname() === name) {
+                    return activeHLGames[i]
+                }
+            }
+            return null
+        }
+    } catch (e) {
+        setTimeout(() => {
+            throw "hangman.js - check : " + e
+        })
     }
 }
 
@@ -65,39 +71,44 @@ let run = async function (message) {
 
 
 let check = function (Discord, client, reaction, user, currencyMembers) {
-    if (reaction.message.channel.name !== config.botSpamChat) return
-    if (reaction.message.author.id !== client.user.id) return
-    if (user.id === client.user.id) return
-    if (!reaction.message.embeds[0]) return
-    let game = findHLgame(reaction.message.embeds[0].title)
-    if (!game) return
-    let embed
-    let r
-    if (reaction.emoji.name === "🔺") {
-        r = game.checkGame("high")
-    }
-    if (reaction.emoji.name === "🔻") {
-        r = game.checkGame("low")
-    }
-    if (r == 1) {
-        embed = game.getEmbed()
-    } else {
-        embed = game.getEmbed()
-        embed.setDescription("```you have won " + (game.bet * game.multiplier) + " " + config.currency + "```")
-        let member = findMember(user, currencyMembers)
-        changeCurrency(member, "add", (game.bet * game.multiplier))
-        member.stats.highlow.gamesWon = member.stats.highlow.gamesWon + 1
-        if (member.stats.highlow.highestMultiplier < game.multiplier) member.stats.highlow.highestMultiplier = game.multiplier
-        reaction.message.react("❌").catch(err => {
-            console.log(err.message)
+    try {
+        if (reaction.message.channel.name !== config.botSpamChat) return
+        if (reaction.message.author.id !== client.user.id) return
+        if (user.id === client.user.id) return
+        if (!reaction.message.embeds[0]) return
+        let game = findHLgame(reaction.message.embeds[0].title)
+        if (!game) return
+        let embed
+        let r
+        if (reaction.emoji.name === "🔺") {
+            r = game.checkGame("high")
+        }
+        if (reaction.emoji.name === "🔻") {
+            r = game.checkGame("low")
+        }
+        if (r == 1) {
+            embed = game.getEmbed()
+        } else {
+            embed = game.getEmbed()
+            embed.setDescription("```you have won " + (game.bet * game.multiplier) + " " + config.currency + "```")
+            let member = findMember(user, currencyMembers)
+            changeCurrency(member, "add", (game.bet * game.multiplier))
+            member.stats.highlow.gamesWon = member.stats.highlow.gamesWon + 1
+            if (member.stats.highlow.highestMultiplier < game.multiplier) member.stats.highlow.highestMultiplier = game.multiplier
+            reaction.message.react("❌").catch(err => {
+                console.log(err.message)
+            })
+            game.stop()
+        }
+        reaction.remove(user)
+        reaction.message.edit({
+            embed
         })
-        game.stop()
+    } catch (e) {
+        setTimeout(() => {
+            throw "hangman.js - check : " + e
+        })
     }
-    reaction.remove(user)
-    reaction.message.edit({
-        embed
-    })
-
 
 }
 
@@ -110,14 +121,14 @@ module.exports = {
 }
 
 function findHLgame(name) {
-    return activeHLGames.find(g=>g.creator.name === name)
+    return activeHLGames.find(g => g.creator.name === name)
 }
 
 class HighLow {
     constructor(player, bet) {
         this.creator = player
         this.remainingCards = []
-        
+
         for (let set of cardLinks.length) {
             for (let j = 0; j < set.length; j++) {
                 this.remainingCards.push(new Card(j + 1, set[j]))
