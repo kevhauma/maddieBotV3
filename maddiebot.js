@@ -5,6 +5,11 @@ const Discord = require('discord.js')
 //const gamble = require("./commands/gamble")
 const config = require("./data/config.json")
 
+//let clear = require("./database/clearDb")
+//clear.run()
+
+
+
 
 //const axios = require('axios')
 //let fs = require("fs")
@@ -75,6 +80,7 @@ client.on('ready', () => {
     //        })
 })
 //client.on('message', function (message) {
+
 //    if (message.channel.type == 'dm') {
 //        if (message.channel.recipient.id !== owner.id)
 //            owner.send(message.author.username + ' to ' + message.channel.recipient.username + ': ' + message.content)

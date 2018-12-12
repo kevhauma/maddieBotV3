@@ -11,15 +11,17 @@ let run = async function (message) {
         let gifter = await mH.getMemberByID(message.member.id)
         let giftee = await mH.getMemberByID(message.mentions.members.first().id)
 
-
-        let amount = message.content.match(/\d*$|all/i)[0]
-
-        if (!isNaN(amount)) {
-            amount = parseInt(amount)
-        } else if (amount == 'all') {
-            amount = gifter.currency.points
+        let amount = message.content.match(/ [0-9]+| all/i)
+        if(amount)
+            amount = amount[0].trim()
+        if (!amount) {
+            message.reply("you can't gamble 0 " + settings.currency)
+            return
         }
+        if (amount == "all") {
+            amount = member.currency.points
 
+        }
         if (!gifter.mod)
             gifter.subtractCurrency(amount)
 
