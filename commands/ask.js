@@ -13,6 +13,7 @@ cleverbot.configure({
 
 async function run(message) {
     try {
+
         let settings = await dbH.get(message.guild.id)
         questionWordsResponses = settings.questionWordResponses
         eightballResponses = settings.eightballResponses
@@ -41,11 +42,11 @@ async function run(message) {
                 else sendAnswer(message, "hmmm... i'd go with the latter.", restofmessage)
             } else {
                 let questionword
-                questionWords.forEach(w => {
+                for (let w of questionWords) {
                     if (lowercaseContent.includes(w))
                         questionword = w
-                })
-                if (w)
+                }
+                if (questionword)
                     response = getResponse(questionword)
                 sendAnswer(message, response, restofmessage)
             }
@@ -58,7 +59,7 @@ async function run(message) {
         throw "ask.js: " + e
     }
 
-    function sendAnswer(sentence, restofmessage) {
+    function sendAnswer(sentence) {
         let embed = new Discord.RichEmbed()
             .setTitle(message.member.displayName)
             .setColor(message.member.displayColor)

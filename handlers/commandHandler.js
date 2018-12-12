@@ -15,13 +15,13 @@ try {
 
 async function messageHandle(message) {
     try {
-        setting = await dbHandler.settings.get()
+        setting = await dbHandler.settings.get(message.guild.id)
 
         if (!message.content.startsWith(setting.prefix)) return
 
-        let commandCall = message.content.split(" ")[0].replace("!", "")
+        let commandCall = message.content.split(" ")[0].replace(setting.prefix, "")
         let command = commands.find(c => c.name === commandCall)
-        if (!command) return
+        if (!command) throw commandCall + " is not a command"
 
         command.run(message)
     } catch (e) {

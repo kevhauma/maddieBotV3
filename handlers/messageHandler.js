@@ -3,8 +3,10 @@ let functionHandler = require("./functionhandler")
 
 
 function handle(message) {
+    message.channel.startTyping()
     //all commands *obviously*
-    commandHandler.messageHandle()
+    commandHandler.messageHandle(message)
     //functions -> giveOnMessage, react, artclub,
-    functionHandler.handle()
+    functionHandler.handle(message)
+    message.channel.stopTyping()
 }

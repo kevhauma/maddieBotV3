@@ -1,14 +1,13 @@
 let mh = require("../handlers/memberHandler")
-let settings = require("../handlers/databaseHandler").settings
-let config = require("../data/config.json")
+let settings = require("../handlers/databaseHandler").settingss
 let run = async function (message) {
     try {
-        config = await settings.get(message.guild.id)
+        let settings = await settings.get(message.guild.id)
         let member = await mh.getMemberByID(message.member.id, message.guild.id)
         let amount = message.content.match(/\d*$|all/i)[0]
 
         if (!amount) {
-            message.reply("you can't gamble 0 " + config.currency)
+            message.reply("you can't gamble 0 " + settings.currency)
             return
         }
         if (amount == "all") {
@@ -19,11 +18,11 @@ let run = async function (message) {
         if (Math.random() * 100 > member.stats.gamble.chance) {
             member.addCurrency(amount * 2)
             member.addGamble("won")
-            message.reply("you have won " + amount + " " + config.currency + ", you now have " + member.currency.points + " " + config.currency)
+            message.reply("you have won " + amount + " " + settings.currency + ", you now have " + member.currency.points + " " + settings.currency)
 
         } else {
             member.addGamble("lost")
-            message.reply("you have lost " + amount + " " + config.currency + ", you now have " + member.currency.points + " " + config.currency)
+            message.reply("you have lost " + amount + " " + settings.currency + ", you now have " + member.currency.points + " " + settings.currency)
         }
         await member.update()
         
@@ -37,6 +36,6 @@ let run = async function (message) {
 module.exports = {
     name: "gamble",
     spam: true,
-    descr: "gamble your " + config.currency + " away!",
+    descr: "gamble your points away!",
     run: run
 }

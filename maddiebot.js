@@ -1,18 +1,20 @@
 ////packages
 const Discord = require('discord.js')
-const mh = require("./handlers/memberHandler")
-const settingHandler = require("./handlers/databaseHandler").settings
-const gamble = require("./commands/gamble")
+//const mh = require("./handlers/memberHandler")
+//const settingHandler = require("./handlers/databaseHandler").settings
+//const gamble = require("./commands/gamble")
 const config = require("./data/config.json")
+
+
 //const axios = require('axios')
 //let fs = require("fs")
 //let JSONStream = require("JSONStream")
 //let he = require('he');
 //let Cleverbot = require('cleverbot-node');
 //
-mh.getMember("316521652034863104",{name:"MrJunior717"}).then((m) => {
-    console.log(m)
-})
+//mh.getMember("316521652034863104",{name:"MrJunior717"}).then((m) => {
+//    console.log(m)
+//})
 
 const client = new Discord.Client()
 //
@@ -149,6 +151,6 @@ client.on('ready', () => {
 //client.on('resume', (replayed) => {
 //    console.log("resume", replayed)
 //})
-client.login(config.token).catch((err) => {
+client.login(config.bot_token).catch((err) => {
     console.log(err)
 })

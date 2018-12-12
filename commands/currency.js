@@ -1,10 +1,9 @@
 let mH = require("../handlers/memberHandler")
 let dbH = require("../handlers/databaseHandler")
-let config = require("../data/config.json")
 let logger = require("../logger/logger")
 let run = async function (message) {
     try {
-        config = await dbh.settings.get(message.guild.id)
+        let settings = await dbh.settings.get(message.guild.id)
         let member = await mh.getMemberByID(message.member.id, message.guild.id, message.member)
         let mentioned = message.mentions.members.first()
         if (mentioned) {
@@ -20,7 +19,7 @@ let run = async function (message) {
 
         logger.log("info", message.member.displayName + " tried to check " + mentioned.displayName + "'s currency but failed")
 
-        message.send(member.name + " has " + member.currency.points + " " + config.currency + ".")
+        message.send(member.name + " has " + member.currency.points + " " + settings.currency + ".")
 
     } catch (e) {
         setTimeout(() => {
@@ -31,8 +30,8 @@ let run = async function (message) {
 
 
 module.exports = {
-    name: config.currency,
+    name: "points",
     spam: true,
-    descr: "returns your amount of " + config.currency,
+    descr: "returns your amount of points",
     run: run
 }

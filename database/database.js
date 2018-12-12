@@ -10,12 +10,12 @@ const client = new MongoClient(url);
 
 let db = {}
 
-    
+
 client.connect(err => {
     if (err) throw "databse is rip: " + err
-    serverList.forEach(s=>{
+    for (let s of serverList)
         db[s.guild] = client.db(s.guild)
-    })
+
 })
 
 module.exports.get = function (s) {
