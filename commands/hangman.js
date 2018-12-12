@@ -76,6 +76,8 @@ let check = async function (reaction) {
                 embed
             })
             game.creator.addHangMan("lost")
+            
+            game.creator.update()
             game.stop()
         } else if (status == 2) {
             let gain = game.gethangword().length * 10
@@ -84,15 +86,17 @@ let check = async function (reaction) {
                 gamesPlayed: 0,
                 gamesWon: 0
             }
+            
             game.creator.addCurrency(gain)
             game.creator.addHangman("won")
             embed.setDescription("``` you have won this game. Congratulations!```\n you have won " + gain + " " + config.currency + "!")
+            
             reaction.message.edit({
                 embed
             })
             game.stop()
-        } else
-        if (status == 1) {
+            game.creator.update()
+        } else if (status == 1) {
             let embed = game.getEmbed()
             reaction.message.edit({
                 embed

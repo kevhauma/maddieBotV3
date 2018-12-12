@@ -1,6 +1,7 @@
 let activeHLGames = []
-let config = require("../data/config.json")
 let mH = require("../handlers/memberHandler")
+let sH = require("../handlers/databaseHandler").settings
+
 let cardLinks = [
         ["https://i.imgur.com/L153PAB.png", "https://i.imgur.com/dFa7Odn.png", "https://i.imgur.com/vLoWTU1.png", "https://i.imgur.com/UdJ9r6Y.png", "https://i.imgur.com/EW5mUKy.png", "https://i.imgur.com/ueNjAUe.png", "https://i.imgur.com/gNjDyUx.png", "https://i.imgur.com/ErBu5dM.png", "https://i.imgur.com/wpG1TTP.png", "https://i.imgur.com/AwAck4B.png", "https://i.imgur.com/ZN2hXYL.png", "https://i.imgur.com/ISgGXjC.png", "https://i.imgur.com/GufwcNy.png"]
         ,
@@ -13,6 +14,9 @@ let cardLinks = [
 
 let run = async function (message) {
     try {
+        let settings = await sH.get(reaction.message.guild.id)
+        if (reaction.message.channel.name !== settings.botSpamChat) return
+
         let isAllowed = false
         let player = await mH.getMemberByID(message.member.id)
 
@@ -62,7 +66,7 @@ let run = async function (message) {
         }
     } catch (e) {
         setTimeout(() => {
-            throw "hangman.js - check : " + e
+            throw "highlow.js - run : " + e
         })
     }
 }
@@ -70,35 +74,35 @@ let run = async function (message) {
 
 
 
-let check = function (Discord, client, reaction, user, currencyMembers) {
+let check = async function (reaction) {
     try {
-        if (reaction.message.channel.name !== config.botSpamChat) return
-        if (reaction.message.author.id !== client.user.id) return
-        if (user.id === client.user.id) return
+        let settings = await sH.get(reaction.message.guild.id)
+        if (reaction.message.channel.name !== settings.botSpamChat) return
+
         if (!reaction.message.embeds[0]) return
+
         let game = findHLgame(reaction.message.embeds[0].title)
         if (!game) return
+
         let embed
         let r
-        if (reaction.emoji.name === "🔺") {
-            r = game.checkGame("high")
-        }
-        if (reaction.emoji.name === "🔻") {
-            r = game.checkGame("low")
-        }
-        if (r == 1) {
+
+        r = game.checkGame(reaction.emoji.name)
+
+        embed = game.getEmbed()
+        if (!r) {
             embed = game.getEmbed()
-        } else {
-            embed = game.getEmbed()
-            embed.setDescription("```you have won " + (game.bet * game.multiplier) + " " + config.currency + "```")
-            let member = findMember(user, currencyMembers)
-            changeCurrency(member, "add", (game.bet * game.multiplier))
-            member.stats.highlow.gamesWon = member.stats.highlow.gamesWon + 1
-            if (member.stats.highlow.highestMultiplier < game.multiplier) member.stats.highlow.highestMultiplier = game.multiplier
-            reaction.message.react("❌").catch(err => {
-                console.log(err.message)
-            })
+            let gain = game.bet * game.multiplier
+            embed.setDescription("```you have won " + gain + " " + settings.currency + "```")
+            
+            
+            game.creator.addCurrency(gain)
+            game.creator.addHighLow(game.multiplier)
+            
+            reaction.message.react("❌")
+            
             game.stop()
+            await game.creator.update()
         }
         reaction.remove(user)
         reaction.message.edit({
@@ -106,7 +110,7 @@ let check = function (Discord, client, reaction, user, currencyMembers) {
         })
     } catch (e) {
         setTimeout(() => {
-            throw "hangman.js - check : " + e
+            throw "highlow.js - check : " + e
         })
     }
 
@@ -152,18 +156,19 @@ class HighLow {
         let prevCard = this.previousCard
         let newCard = this.getCard()
         if (this.remainingCards.length == 0) return 0
+        
         if (newCard.getValue() == prevCard.getValue()) {
             return 1
         }
-        if (highlow === "high") {
+        if (highlow === "🔺") {
             if (newCard.getValue() > prevCard.getValue()) {
-                this.multiplier = this.multiplier + 0.5
+                this.multiplier += 0.5
                 return 1
             } else return 0
 
-        } else if (highlow === "low") {
+        } else if (highlow === "🔻") {
             if (newCard.getValue() < prevCard.getValue()) {
-                this.multiplier = this.multiplier + 0.5
+                this.multiplier += 0.5
                 return 1
             } else return 0
 
@@ -176,11 +181,8 @@ class HighLow {
         return this.creator.id
     }
 
-    stop() {
-        const index = activeHLGames.indexOf(this);
-        if (index !== -1) {
-            activeHLGames.splice(index, 1);
-        }
+    stop() {        
+        activeHangmanGames = activeHangmanGames.filter(g=>g.creator.id === this.creator.id)        
     }
     getEmbed() {
         let embed = new Discord.RichEmbed()

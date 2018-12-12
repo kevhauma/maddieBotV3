@@ -53,10 +53,10 @@ class Member {
             this.stats.jackpot.jackpot += 1
         this.stats.jackpot.gamesPlayed += 1
     }
-    addHighLow(maxMul) {
+    addHighLow(mult) {
         this.stats.highlow.gamesPlayed += 1
-        if (maxMul > this.stats.higlow.maxMul)
-            this.stats.higlow.maxMul = maxMul
+        if (mult > this.stats.higlow.maxMul)
+            this.stats.higlow.maxMul = mult
     }
     addHangman(result) {
         if (result === "won")

@@ -1,46 +1,31 @@
-let config = require("../data/config.json")
-let run = function (Discord, client, message, words, currencyMembers, axios, cleverbot) {
-    let command = words[0] //first word
-    let role
-    let roleExists = false
-    let member = message.member //user who sent messages              
+let sH = require("../handlers/databaseHandler").settings
 
+let run = async function (message) {
+    try {
+        let settings = await sH.get(message.guild.id)
+        let role = message.content.split(" ")[1]
+        let roleExists = false
+        let member = message.member //user who sent messages              
 
-    if (words.length < 2) return
+        if (words.length < 2) return
 
-    for (let i = 0; i < config.saroles.length; i++) {
-        if (words[1] === config.saroles[i]) { //if second word is one of the pre-defined
-            roleExists = true
-        }
-    }
-    if (roleExists) { //if second word is one of the pre-defined words
-        role = message.guild.roles.find("name", words[1]) //gets role collection from api
-    } else {
-        sendIAMresponse(member + ",This role does not exists.", 16711680)
-        return
-    }
-
-    if (command === "!iamnot") {
-        if (message.member.roles.has(role.id)) {
-            member.removeRole(role)
-            console.log('removed ' + message.author.username + " the role: " + words[1])
-            sendIAMresponse(member + ", succesfully removed " + role.name + " from you.", 65280)
-
+        if (settings.saroles.includes(role)) {
+            role = message.guild.roles.find("name", role)
         } else {
-            sendIAMresponse(member + ", you don't have that role yet.", 16711680)
+            message.reply(" This role does not exists.")
             return
         }
-    }
-
-    function sendIAMresponse(descr, color) {
-        message.channel.send({
-            embed: {
-                color: color,
-                description: descr
-            }
+        if (!message.member.roles.has(role.id)) {
+            message.reply(" you don't have that role yet.", 16711680)
+            return
+        }
+        member.removeRole(role)
+        message.reply(" succesfully removed " + role.name + " from you.")
+    } catch (e) {
+        setTimeout(() => {
+            throw "iamnot.js: " + e
         })
     }
-
 }
 
 
@@ -48,6 +33,6 @@ let run = function (Discord, client, message, words, currencyMembers, axios, cle
 module.exports = {
     name: "iamnot",
     spam: true,
-    descr: "gives roles for hidden channels",
+    descr: "removes roles for hidden channels",
     run: run
 }
